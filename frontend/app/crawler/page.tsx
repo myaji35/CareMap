@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSession } from 'next-auth/react';
 
 interface CrawlerLog {
   timestamp: string;
@@ -12,7 +12,7 @@ interface CrawlerLog {
 
 export default function CrawlerPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isAdmin } = useAuth();
+  const { data: session, status } = useSession();
   const [isRunning, setIsRunning] = useState(false);
   const [logs, setLogs] = useState<CrawlerLog[]>([]);
   const [stats, setStats] = useState({
@@ -24,13 +24,15 @@ export default function CrawlerPage() {
 
   // 관리자 권한 체크
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (status === 'loading') return;
+
+    if (!session) {
       router.push('/login');
-    } else if (!isAdmin) {
+    } else if (session.user.userType !== 'ADMIN') {
       alert('관리자 권한이 필요합니다.');
       router.push('/');
     }
-  }, [isAuthenticated, isAdmin, router]);
+  }, [session, status, router]);
 
   const addLog = (level: CrawlerLog['level'], message: string) => {
     const newLog: CrawlerLog = {

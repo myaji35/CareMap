@@ -2,19 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { register as apiRegister } from '@/lib/api/auth';
+import { signIn } from 'next-auth/react';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
-    password_confirm: '',
-    user_type: 'user',
-    phone_number: '',
+    passwordConfirm: '',
+    phoneNumber: '',
     organization: '',
   });
   const [error, setError] = useState('');
@@ -31,7 +28,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
-    if (formData.password !== formData.password_confirm) {
+    if (formData.password !== formData.passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.');
       return;
     }
@@ -39,9 +36,33 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await apiRegister(formData);
-      login(response.user, response.token);
-      router.push('/');
+      // Call register API
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '회원가입에 실패했습니다.');
+      }
+
+      // Auto login after registration
+      const result = await signIn('credentials', {
+        username: formData.username,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('회원가입은 완료되었으나 로그인에 실패했습니다. 로그인 페이지에서 다시 시도해주세요.');
+        setTimeout(() => router.push('/login'), 2000);
+      } else {
+        router.push('/');
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '회원가입에 실패했습니다.');
     } finally {
@@ -113,8 +134,8 @@ export default function RegisterPage() {
             </label>
             <input
               type="password"
-              name="password_confirm"
-              value={formData.password_confirm}
+              name="passwordConfirm"
+              value={formData.passwordConfirm}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               required
@@ -127,8 +148,8 @@ export default function RegisterPage() {
             </label>
             <input
               type="tel"
-              name="phone_number"
-              value={formData.phone_number}
+              name="phoneNumber"
+              value={formData.phoneNumber}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               placeholder="010-1234-5678"

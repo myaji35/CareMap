@@ -3,12 +3,11 @@
 import { KakaoMap } from '@/components/KakaoMap';
 import { mockInstitutions } from '@/lib/mockData';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { logout as apiLogout } from '@/lib/api/auth';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Home() {
   const router = useRouter();
-  const { user, token, logout, isAuthenticated } = useAuth();
+  const { data: session, status } = useSession();
 
   const handleMarkerClick = (id: number) => {
     console.log('Institution clicked:', id);
@@ -17,14 +16,7 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
-    if (token) {
-      try {
-        await apiLogout(token);
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-    }
-    logout();
+    await signOut({ redirect: false });
     router.push('/login');
   };
 
@@ -35,10 +27,12 @@ export default function Home() {
         <h1 className="text-xl font-bold text-gray-800">CareMap</h1>
 
         <div className="flex items-center gap-4">
-          {isAuthenticated && user ? (
+          {status === 'loading' ? (
+            <div className="text-sm text-gray-500">로딩 중...</div>
+          ) : session?.user ? (
             <>
               {/* 관리자 전용 메뉴 */}
-              {user.user_type === 'admin' && (
+              {session.user.userType === 'ADMIN' && (
                 <button
                   onClick={() => router.push('/crawler')}
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition"
@@ -48,9 +42,9 @@ export default function Home() {
               )}
               <div className="text-sm">
                 <span className="text-gray-600">환영합니다, </span>
-                <span className="font-semibold text-blue-600">{user.username}</span>
+                <span className="font-semibold text-blue-600">{session.user.name}</span>
                 <span className="text-xs text-gray-500 ml-2">
-                  ({user.user_type === 'admin' ? '관리자' : '사용자'})
+                  ({session.user.userType === 'ADMIN' ? '관리자' : session.user.userType === 'MANAGER' ? '매니저' : '사용자'})
                 </span>
               </div>
               <button

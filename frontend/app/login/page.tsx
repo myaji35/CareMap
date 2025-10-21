@@ -2,12 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { login as apiLogin } from '@/lib/api/auth';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,11 +17,20 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await apiLogin({ username, password });
-      login(response.user, response.token);
-      router.push('/');
+      const result = await signIn('credentials', {
+        username,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+      } else {
+        router.push('/');
+        router.refresh();
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '로그인에 실패했습니다.');
+      setError('로그인에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
