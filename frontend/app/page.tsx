@@ -1,18 +1,46 @@
 'use client';
 
 import { KakaoMap } from '@/components/KakaoMap';
-import { mockInstitutions } from '@/lib/mockData';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import type { Institution } from '@/types/institution';
 
 export default function Home() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch institutions from API
+  useEffect(() => {
+    async function fetchInstitutions() {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/institutions');
+
+        if (!response.ok) {
+          throw new Error('기관 목록을 불러오는데 실패했습니다.');
+        }
+
+        const data = await response.json();
+        setInstitutions(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+        console.error('Error fetching institutions:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchInstitutions();
+  }, []);
 
   const handleMarkerClick = (id: number) => {
     console.log('Institution clicked:', id);
     // 나중에 상세 페이지로 이동
-    // router.push(`/institution/${id}`);
+    // router.push(`/institutions/${id}`);
   };
 
   const handleLogout = async () => {
@@ -67,10 +95,33 @@ export default function Home() {
 
       {/* 지도 */}
       <div className="w-full h-full pt-16">
-        <KakaoMap
-          institutions={mockInstitutions}
-          onMarkerClick={handleMarkerClick}
-        />
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">기관 정보를 불러오는 중...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center text-red-600">
+              <p className="text-lg font-semibold mb-2">오류 발생</p>
+              <p>{error}</p>
+            </div>
+          </div>
+        ) : institutions.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center text-gray-500">
+              <p className="text-lg font-semibold mb-2">등록된 기관이 없습니다</p>
+              <p className="text-sm">관리자에게 문의하세요.</p>
+            </div>
+          </div>
+        ) : (
+          <KakaoMap
+            institutions={institutions}
+            onMarkerClick={handleMarkerClick}
+          />
+        )}
       </div>
     </main>
   );
