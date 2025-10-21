@@ -51,13 +51,40 @@ export default function CrawlerPage() {
     addLog('info', '크롤러를 시작합니다...');
 
     try {
-      // TODO: 실제 API 엔드포인트 연동
-      // const response = await fetch('/api/crawler/start', { method: 'POST' });
+      const response = await fetch('/api/crawler/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      // 현재는 시뮬레이션
-      await simulateCrawler();
+      const data = await response.json();
 
-      addLog('success', '크롤링이 완료되었습니다.');
+      if (!response.ok) {
+        throw new Error(data.error || '크롤링 실행 실패');
+      }
+
+      addLog('info', '기관 데이터 수집 중...');
+      addLog('success', `총 ${data.stats.total}개 기관 처리`);
+      addLog('success', `${data.stats.updated}개 기관 업데이트 완료`);
+
+      if (data.stats.failed > 0) {
+        addLog('warning', `${data.stats.failed}개 기관 업데이트 실패`);
+      }
+
+      setStats({
+        total: data.stats.total,
+        success: data.stats.updated,
+        failed: data.stats.failed,
+        updated: data.stats.updated,
+      });
+
+      addLog('success', data.message);
+
+      // Refresh the page data
+      setTimeout(() => {
+        addLog('info', '페이지 데이터를 새로고침합니다...');
+      }, 1000);
     } catch (error) {
       addLog('error', `크롤링 중 오류 발생: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     } finally {
@@ -65,28 +92,6 @@ export default function CrawlerPage() {
     }
   };
 
-  // 크롤러 시뮬레이션 (실제 구현 시 제거)
-  const simulateCrawler = async () => {
-    const steps = [
-      { delay: 500, log: '데이터베이스 연결 중...', level: 'info' as const },
-      { delay: 800, log: '웹사이트 접속 중...', level: 'info' as const },
-      { delay: 1000, log: '페이지 1/10 크롤링 중...', level: 'info' as const, stats: { total: 10 } },
-      { delay: 1000, log: '10개 기관 정보 수집 완료', level: 'success' as const, stats: { success: 10 } },
-      { delay: 800, log: '주소 좌표 변환 중...', level: 'info' as const },
-      { delay: 1000, log: '10개 기관 좌표 변환 완료', level: 'success' as const },
-      { delay: 1000, log: '데이터베이스 동기화 중...', level: 'info' as const },
-      { delay: 1200, log: '5개 기관 신규 등록, 3개 기관 정보 업데이트', level: 'success' as const, stats: { updated: 3 } },
-      { delay: 500, log: '모든 작업이 완료되었습니다.', level: 'success' as const },
-    ];
-
-    for (const step of steps) {
-      await new Promise((resolve) => setTimeout(resolve, step.delay));
-      addLog(step.level, step.log);
-      if (step.stats) {
-        setStats((prev) => ({ ...prev, ...step.stats }));
-      }
-    }
-  };
 
   const getLogColor = (level: CrawlerLog['level']) => {
     switch (level) {

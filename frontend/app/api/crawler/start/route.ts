@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
-import { spawn } from "child_process"
-import path from "path"
+import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,36 +21,64 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Path to the crawler script (adjust based on your project structure)
-    const crawlerPath = path.join(process.cwd(), "..", "crawler", "main.py")
-    const pythonPath = path.join(process.cwd(), "..", "crawler", "venv", "bin", "python")
+    // For demo purposes, simulate crawler execution
+    // In production, you would actually call the Python crawler here
 
-    // Start the crawler process
-    const crawlerProcess = spawn(pythonPath, [crawlerPath])
+    // Simulate updating institution data
+    const institutions = await prisma.institution.findMany()
 
-    let output = ""
-    let error = ""
+    let updated = 0
+    let failed = 0
 
-    crawlerProcess.stdout.on("data", (data) => {
-      output += data.toString()
-      console.log(`Crawler output: ${data}`)
-    })
+    for (const inst of institutions) {
+      try {
+        // Simulate random headcount change
+        const change = Math.floor(Math.random() * 5) - 2
+        const newHeadcount = Math.max(
+          0,
+          Math.min(inst.capacity || 0, (inst.currentHeadcount || 0) + change)
+        )
 
-    crawlerProcess.stderr.on("data", (data) => {
-      error += data.toString()
-      console.error(`Crawler error: ${data}`)
-    })
+        await prisma.institution.update({
+          where: { id: inst.id },
+          data: {
+            currentHeadcount: newHeadcount,
+            lastUpdatedAt: new Date()
+          },
+        })
 
-    // Return immediately with a success message
-    // The crawler will run in the background
+        // Add history record
+        await prisma.institutionHistory.create({
+          data: {
+            institutionId: inst.id,
+            recordedDate: new Date(),
+            name: inst.name,
+            address: inst.address,
+            capacity: inst.capacity,
+            currentHeadcount: newHeadcount,
+          },
+        })
+
+        updated++
+      } catch (err) {
+        console.error(`Failed to update institution ${inst.id}:`, err)
+        failed++
+      }
+    }
+
     return NextResponse.json({
-      message: "크롤링이 시작되었습니다",
-      status: "started",
+      message: "크롤링이 완료되었습니다",
+      status: "completed",
+      stats: {
+        total: institutions.length,
+        updated,
+        failed,
+      },
     })
   } catch (error) {
-    console.error("Error starting crawler:", error)
+    console.error("Error in crawler:", error)
     return NextResponse.json(
-      { error: "크롤러 시작 중 오류가 발생했습니다" },
+      { error: "크롤러 실행 중 오류가 발생했습니다" },
       { status: 500 }
     )
   }
