@@ -1,0 +1,14 @@
+{
+  "rules": [
+    {
+      "name": "BMad Agile Development",
+      "description": "AI-driven agile development methodology",
+      "rules": [
+        "Use BMad agents for development tasks",
+        "Follow agile principles and practices",
+        "Implement test-driven development",
+        "Maintain code quality and documentation"
+      ]
+    }
+  ]
+}
