@@ -1,0 +1,22 @@
+{
+  "name": "caremap",
+  "version": "1.0.0",
+  "description": "장기요양기관 데이터 시각화 및 분석 플랫폼",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm run start",
+    "lint": "cd frontend && npm run lint",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm run install:frontend"
+  },
+  "keywords": [
+    "caremap",
+    "long-term-care",
+    "data-visualization",
+    "nextjs",
+    "django"
+  ],
+  "author": "gangseungsig",
+  "license": "MIT"
+}
