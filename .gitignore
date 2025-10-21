@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Crawler temp files
+/.crawler-temp
+debug_page.html
+debug_page.png

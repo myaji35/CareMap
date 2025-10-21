@@ -9,6 +9,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   LineChart,
   Line,
   XAxis,
@@ -88,17 +96,17 @@ export function HistoryDialog({
         <div className="mt-6">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <p className="text-slate-500">데이터를 불러오는 중...</p>
+              <p className="text-slate-500 dark:text-slate-400">데이터를 불러오는 중...</p>
             </div>
           ) : history.length === 0 ? (
             <div className="flex items-center justify-center h-64">
-              <p className="text-slate-500">이력 데이터가 없습니다.</p>
+              <p className="text-slate-500 dark:text-slate-400">이력 데이터가 없습니다.</p>
             </div>
           ) : (
             <>
               {/* 라인 차트 */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                   정원 및 현원 추이
                 </h3>
                 <ResponsiveContainer width="100%" height={300}>
@@ -140,7 +148,7 @@ export function HistoryDialog({
 
               {/* 입소율 차트 */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                   입소율 변화
                 </h3>
                 <ResponsiveContainer width="100%" height={200}>
@@ -180,31 +188,21 @@ export function HistoryDialog({
 
               {/* 데이터 테이블 */}
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                   상세 이력
                 </h3>
-                <div className="border rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50 border-b">
-                      <tr>
-                        <th className="px-4 py-3 text-left font-medium text-slate-700">
-                          기록일
-                        </th>
-                        <th className="px-4 py-3 text-left font-medium text-slate-700">
-                          기관명
-                        </th>
-                        <th className="px-4 py-3 text-right font-medium text-slate-700">
-                          정원
-                        </th>
-                        <th className="px-4 py-3 text-right font-medium text-slate-700">
-                          현원
-                        </th>
-                        <th className="px-4 py-3 text-right font-medium text-slate-700">
-                          입소율
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
+                <div className="border dark:border-slate-700 rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-left">기록일</TableHead>
+                        <TableHead className="text-left">기관명</TableHead>
+                        <TableHead className="text-right">정원</TableHead>
+                        <TableHead className="text-right">현원</TableHead>
+                        <TableHead className="text-right">입소율</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {history.map((record) => {
                         const occupancyRate = (
                           (record.currentHeadcount / record.capacity) *
@@ -214,37 +212,37 @@ export function HistoryDialog({
                           record.currentHeadcount > record.capacity;
 
                         return (
-                          <tr key={record.id} className="hover:bg-slate-50">
-                            <td className="px-4 py-3 text-slate-900">
+                          <TableRow key={record.id}>
+                            <TableCell>
                               {new Date(record.recordedDate).toLocaleDateString(
                                 'ko-KR'
                               )}
-                            </td>
-                            <td className="px-4 py-3 text-slate-900">
+                            </TableCell>
+                            <TableCell>
                               {record.name}
-                            </td>
-                            <td className="px-4 py-3 text-right text-slate-900">
+                            </TableCell>
+                            <TableCell className="text-right">
                               {record.capacity}명
-                            </td>
-                            <td
-                              className={`px-4 py-3 text-right font-medium ${
-                                isOvercapacity ? 'text-red-600' : 'text-slate-900'
+                            </TableCell>
+                            <TableCell
+                              className={`text-right font-medium ${
+                                isOvercapacity ? 'text-red-600 dark:text-red-400' : ''
                               }`}
                             >
                               {record.currentHeadcount}명
-                            </td>
-                            <td
-                              className={`px-4 py-3 text-right font-bold ${
-                                isOvercapacity ? 'text-red-600' : 'text-blue-600'
+                            </TableCell>
+                            <TableCell
+                              className={`text-right font-bold ${
+                                isOvercapacity ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'
                               }`}
                             >
                               {occupancyRate}%
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         );
                       })}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               </div>
             </>

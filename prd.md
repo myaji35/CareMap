@@ -30,6 +30,10 @@ CareMap
 ### 1. Tech Stack
 * **Frontend:** Next.js 14 (App Router), React, TypeScript
 * **UI:** Tailwind CSS, shadcn/ui
+* ...
+* **베이스 템플릿 (New):**
+  * **SaaS UI Template by nextjstemplates.com**
+  * **URL:** https://nextjstemplates.com/templates/saas-ui
 * **Database:** Neon.tech (Serverless Postgres)
 * **ORM:** Prisma
 * **Maps API:** Kakao Maps (`react-kakao-maps-sdk`)
@@ -67,9 +71,11 @@ CareMap
 * **[USR-004]** `Institution` 테이블은 항상 최신 크롤링 데이터로 덮어쓴다(업데이트한다).
 
 ### F2: SaaS 대시보드 레이아웃 (Frontend)
-* **[USR-005]** 사용자는 화면 좌측에 고정된 `Sidebar` 메뉴를 볼 수 있다.
-* **[USR-006]** `Sidebar` 메뉴에는 [대시보드], [지도 뷰], [이력 분석] 등의 링크가 포함된다.
-* **[USR-007]** 사용자는 `Sidebar`에서 메뉴를 클릭 시, 화면 우측의 본문(children) 영역에서 해당 페이지를 볼 수 있다.
+* **[GIVEN-001]** 'SaaS UI' 템플릿을 기반으로, 좌측 고정 사이드바 및 우측 본문, 상단 헤더를 포함한 **전형적인 SaaS 대시보드 레이아웃을 기본 제공(Given)받는다.**
+* **[GIVEN-002]** 템플릿의 라이트/다크 모드 테마 토글 기능을 기본 제공받는다.
+* **[GIVEN-003]** 템플릿의 (로그인/회원가입/유저 설정) 등 기본 인증 페이지 UI를 제공받는다.
+* **[USR-005]** (커스터마이징) 템플릿의 `Sidebar` 메뉴를 `CareMap` 요구사항에 맞게 **수정한다.** (e.g., [지도 뷰], [이력 분석] 링크로 변경 및 아이콘 적용)
+* **[USR-006]** (제거) 템플릿이 제공하는 페이지 중 `CareMap`에 불필요한 페이지(e.g., Pricing, Blog)는 메뉴에서 **숨기거나 제거한다.** 클릭 시, 화면 우측의 본문(children) 영역에서 해당 페이지를 볼 수 있다.
 
 ### F3: 지도 기반 기관 시각화 (Map View)
 * **[USR-008]** 사용자는 지도 위에 `Institution` 데이터 기반의 마커를 볼 수 있다.

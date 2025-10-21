@@ -1,160 +1,243 @@
-# CareMap 프로젝트 루트 디렉토리
+# CareMap 프로젝트
 
-> **상위 디렉토리의 내용을 상속받습니다.**
+> **Vibe:** 데이터의 역사와 흐름을 시각화하여, 사용자가 깊은 통찰력을 얻을 수 있도록 돕는 모던 데이터 대시보드
 
 ## 디렉토리 구조
 
 ```
-CareMap/
-├── README.md                # 프로젝트 전체 개요 및 설치 가이드
-├── claude.md                # 현재 파일 (루트 구현 내용)
-├── docs/                    # bmad-method 문서 (claude.md 참조)
-├── frontend/                # Next.js 프론트엔드 (claude.md 참조)
-├── backend/                 # Django 백엔드 (claude.md 참조)
-└── crawler/                 # 데이터 크롤러 (claude.md 참조)
+caremap/
+├── prd.md                   # PRD 문서 (bmad-method)
+├── CLAUDE.md                # 현재 파일 (구현 가이드)
+├── README.md                # 프로젝트 개요
+├── src/                     # Next.js 14 소스 코드
+│   ├── app/                 # App Router 페이지
+│   │   ├── page.tsx         # 메인 랜딩 페이지
+│   │   ├── admin/           # 관리자 크롤러 페이지
+│   │   └── dashboard/       # 대시보드 (지도 뷰 등)
+│   ├── components/          # React 컴포넌트
+│   │   ├── map/             # 지도 관련 컴포넌트
+│   │   └── ui/              # shadcn/ui 컴포넌트
+│   ├── lib/                 # 유틸리티 함수
+│   │   ├── prisma.ts        # Prisma 클라이언트
+│   │   ├── crawler.ts       # 크롤링 로직 (Playwright)
+│   │   └── geocoding.ts     # Kakao Geocoding API
+│   └── generated/           # Prisma Client 생성 파일
+├── prisma/                  # Prisma 스키마
+│   └── schema.prisma        # DB 모델 정의
+└── .env                     # 환경 변수
 ```
 
 ## 프로젝트 개요
 
 ### 목적
-전국 장기요양기관 정보를 크롤링하여 데이터베이스에 저장하고, 지도 위에 시각화하는 SaaS 플랫폼 구축
+전국 장기요양기관의 데이터를 수집, 분석하여 사용자에게 직관적인 시각 자료(지도, 차트)로 제공하고, 기관 데이터의 '월별 변경 이력'을 추적하여 데이터의 신뢰성과 깊이를 더하는 분석 플랫폼
 
 ### 주요 기능
-1. **데이터 수집**: Python 크롤러로 기관 정보 수집 및 DB 동기화
-2. **지도 시각화**: Kakao Maps에 파이차트 마커로 입소율 표시
-3. **인증 시스템**: SaaS 방식의 다중 사용자 로그인 (Admin/Manager/User)
-4. **REST API**: Django REST Framework 기반 백엔드 API
+1. **데이터 수집**: Playwright로 기관 정보 크롤링 및 DB 동기화
+2. **지도 시각화**: Kakao Maps에 파이차트 마커로 정원/현원 표시
+3. **이력 관리**: InstitutionHistory 모델로 월별 변경 추적
+4. **관리자 대시보드**: 크롤링 제어 및 데이터 관리
+
+### Tech Stack
+- **Framework**: Next.js 14 (App Router), React, TypeScript
+- **UI**: Tailwind CSS, shadcn/ui (New York, Slate)
+- **Database**: Neon.tech (Serverless Postgres) + Prisma ORM
+- **Maps**: Kakao Maps API (`react-kakao-maps-sdk`)
+- **Charts**: Recharts
+- **Crawler**: Playwright (Chromium)
 
 ### 개발 방법론
 - **bmad-method v4.44.0** 적용
-- Epic → User Story → Task 단위로 개발
-- 문서 기반 요구사항 정의 및 아키텍처 설계
+- PRD 기반 요구사항 정의
+- Epic → User Story → Task 단위 개발
 
 ## 완성된 기능
 
-### Phase 1: 프로젝트 기본 구조 (완료)
-✅ bmad-method 문서 작성 (PRD, Architecture, Epic 분해)
-✅ Frontend Next.js 14 프로젝트 설정
-✅ Backend Django 4.2.11 프로젝트 설정
-✅ Crawler 기본 구조 및 DB 연동
+### Phase 1: 데이터베이스 설계 (완료)
+✅ Prisma 스키마 정의 (Institution, InstitutionHistory)
+✅ Neon.tech PostgreSQL 연동 준비
+✅ Prisma Client 생성 및 유틸리티 설정
 
-### Phase 2: 인증 시스템 (완료)
-✅ Custom User 모델 (user_type: admin/manager/user)
-✅ Token 기반 인증 API
-✅ 로그인/회원가입 페이지
-✅ AuthContext로 전역 인증 상태 관리
-✅ 관리자 계정 생성 스크립트 (Admin/admdnjs!00)
+### Phase 2: 크롤러 시스템 (완료)
+✅ Playwright 기반 크롤링 엔진 구현 (`src/lib/crawler.ts`)
+✅ 전체 페이지 수 자동 감지 기능
+✅ 관리자 크롤링 페이지 (`src/app/admin/page.tsx`)
+✅ 실시간 진행 상태 및 로그 표시
+✅ API 엔드포인트: `/api/admin/crawler/*`
 
 ### Phase 3: 지도 시각화 (완료)
-✅ Kakao Maps SDK 연동
-✅ 파이차트 마커 렌더링 (입소율 색상 구분)
-✅ 마커 호버 시 정보 카드 표시
-✅ Mock 데이터 기반 프로토타입
+✅ Kakao Maps SDK 연동 (`react-kakao-maps-sdk`)
+✅ 파이차트 마커 (`CustomPieMarker`) - 정원/현원 숫자 표시
+✅ 초과 현원 시 경고 색상(빨강) 표시
+✅ 기관 정보 Popover 및 호버 효과
+✅ 이력 다이얼로그 (`HistoryDialog`)
 
-### Phase 4: 크롤러 기본 구조 (완료)
-✅ DatabaseManager 클래스 (UPSERT, 이력 관리)
-✅ Kakao Geocoding API 연동
-✅ 샘플 데이터 기반 동작 확인
+### Phase 4: API 및 데이터 관리 (완료)
+✅ `/api/institutions` - 기관 목록 조회
+✅ `/api/institutions/[id]/history` - 기관 이력 조회
+✅ `/api/admin/crawler/total-pages` - 전체 페이지 수 조회
+✅ `/api/admin/crawler/start` - 크롤링 시작
+✅ Kakao Geocoding API 연동 (`src/lib/geocoding.ts`)
+
+## 데이터베이스 모델
+
+### Institution (기관 최신 정보)
+```prisma
+model Institution {
+  id                String                @id @default(cuid())
+  institutionCode   String                @unique
+  name              String
+  serviceType       String
+  capacity          Int
+  currentHeadcount  Int
+  address           String
+  latitude          Float
+  longitude         Float
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  history           InstitutionHistory[]
+}
+```
+
+### InstitutionHistory (변경 이력)
+```prisma
+model InstitutionHistory {
+  id                String      @id @default(cuid())
+  institutionId     String
+  recordedDate      DateTime    @default(now())
+  name              String
+  address           String
+  capacity          Int
+  currentHeadcount  Int
+  institution       Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+}
+```
 
 ## 환경 변수
 
-### 공통 설정
-- **Kakao JavaScript Key**: 837719
-- **Kakao REST API Key**: (미설정, .env 파일에 추가 필요)
-- **API Base URL**: http://localhost:8000/api
+`.env` 파일에 다음 변수를 설정하세요:
 
-### 각 디렉토리별 환경 변수
-- `frontend/.env.local`: NEXT_PUBLIC_KAKAO_APP_KEY, NEXT_PUBLIC_API_URL
-- `backend/caremap/settings.py`: SECRET_KEY, DATABASE_URL, ALLOWED_HOSTS
-- `crawler/.env`: KAKAO_REST_API_KEY, DB_* (PostgreSQL 연결 정보)
+```bash
+# Database (Neon.tech 또는 로컬 Postgres)
+DATABASE_URL="postgresql://..."
+
+# Kakao Maps API
+NEXT_PUBLIC_KAKAO_MAP_API_KEY="a63d90809c12a1ab306437407ee04834"
+KAKAO_REST_API_KEY="83022bf07d136c31285491b85c6ee6aa"
+
+# Crawler
+CRAWLER_TARGET_URL="https://www.longtermcare.or.kr/npbs/r/a/201/selectXLtcoSrch"
+```
 
 ## 실행 방법
 
-### 전체 시스템 실행 (3개 터미널 필요)
-
-**터미널 1: Backend**
+### 1. 의존성 설치
 ```bash
-cd backend
-source venv/bin/activate
-python manage.py runserver
-# http://localhost:8000/api 에서 API 제공
+npm install
+npx playwright install chromium  # 크롤러용 브라우저
 ```
 
-**터미널 2: Frontend**
+### 2. 환경 변수 설정
+`.env` 파일을 생성하고 위의 환경 변수를 설정합니다.
+
+### 3. 데이터베이스 설정
 ```bash
-cd frontend
+# Prisma Client 생성
+npx prisma generate
+
+# 데이터베이스 스키마 적용 (Neon.tech 또는 로컬 Postgres)
+npx prisma db push
+```
+
+### 4. 개발 서버 실행
+```bash
 npm run dev
 # http://localhost:3000 에서 웹 UI 제공
 ```
 
-**터미널 3: Crawler (필요 시)**
-```bash
-cd crawler
-source venv/bin/activate
-python main.py
-# 크롤링 실행 및 DB 동기화
-```
+### 5. 주요 페이지
+- **메인 페이지**: http://localhost:3000
+- **지도 뷰**: http://localhost:3000/dashboard/map-view
+- **관리자 크롤러**: http://localhost:3000/admin
 
-## 테스트 시나리오
+## 사용 시나리오
 
-### 1. 회원가입 및 로그인
-1. http://localhost:3000 접속
-2. "로그인" 버튼 클릭
-3. 테스트 계정으로 로그인: Admin / admdnjs!00
-4. 메인 페이지에서 "환영합니다, Admin (관리자)" 확인
-5. 로그아웃 버튼으로 로그아웃 테스트
+### 1. 관리자: 크롤링 실행
+1. http://localhost:3000/admin 접속
+2. "전체 페이지 수 확인" 버튼 클릭 (10-20초 소요)
+3. 전체 페이지 수가 표시되면 크롤링할 페이지 수 입력
+4. "크롤링 시작" 버튼 클릭
+5. 실시간 로그 및 진행률 확인
+6. 완료 후 "데이터 가져오기" 버튼으로 DB에 저장
 
-### 2. 지도 시각화
-1. 메인 페이지에서 Kakao 지도 확인
-2. 6개 샘플 기관 마커 표시 확인
-3. 마커에 마우스 오버 시 정보 카드 표시
-4. 입소율에 따른 색상 구분 확인 (녹색/주황/빨강)
+### 2. 사용자: 지도에서 기관 확인
+1. http://localhost:3000/dashboard/map-view 접속
+2. 지도에 표시된 파이차트 마커 확인
+   - 파란색: 정상 입소율
+   - 빨간색: 정원 초과
+   - 마커 내부: 현원/정원 숫자 표시
+3. 마커에 마우스 오버하여 기관 정보 팝업 확인
+4. "이력 보기" 버튼 클릭하여 변경 이력 차트 확인
 
-### 3. API 테스트
-```bash
-# 회원가입
-curl -X POST http://localhost:8000/api/accounts/register/ \
-  -H "Content-Type: application/json" \
-  -d '{"username":"testuser","email":"test@test.com","password":"testpass123","password_confirm":"testpass123"}'
-
-# 로그인
-curl -X POST http://localhost:8000/api/accounts/login/ \
-  -H "Content-Type: application/json" \
-  -d '{"username":"Admin","password":"admdnjs!00"}'
-
-# 프로필 조회 (token 필요)
-curl -X GET http://localhost:8000/api/accounts/profile/ \
-  -H "Authorization: Token YOUR_TOKEN_HERE"
-```
+### 3. 데이터 분석: 이력 조회
+1. 기관 마커 클릭 → "이력 보기"
+2. 월별 정원/현원 변화 추이 차트 확인
+3. 테이블에서 구체적인 변경 내역 확인
 
 ## 다음 개발 단계
 
-### 진행 예정 작업
-1. **기관 API 구현**: institutions 앱에 CRUD API 추가
-2. **실제 크롤링**: 실제 웹사이트에서 데이터 수집 로직 구현
-3. **API 연동**: Frontend에서 Mock 데이터 대신 실제 API 호출
-4. **기관 상세 페이지**: 클릭 시 상세 정보 및 이력 차트 표시
+### Phase 5: SaaS UI 템플릿 적용 (예정)
+- [ ] SaaS UI 템플릿 분석 및 통합
+- [ ] 좌측 고정 사이드바 구현
+- [ ] 라이트/다크 모드 토글
+- [ ] 메뉴 커스터마이징 (지도 뷰, 이력 분석 등)
 
-### 개선 사항
-- PostgreSQL 마이그레이션 (현재 SQLite 사용 중)
-- 검색 및 필터링 기능 추가
-- 관리자 대시보드 구현
-- 배포 환경 구축 (Docker, Nginx 등)
+### Phase 6: 이력 관리 강화 (예정)
+- [ ] 크롤링 데이터 비교 로직 구현 (USR-002, USR-003)
+- [ ] 변경 감지 시 InstitutionHistory 자동 백업
+- [ ] 월별 이력 차트 개선 (Recharts)
+- [ ] 이력 통계 대시보드
+
+### Phase 7: 인증 시스템 (예정)
+- [ ] NextAuth.js 또는 Clerk 통합
+- [ ] 사용자 등급별 권한 관리 (Admin/Manager/User)
+- [ ] 로그인/회원가입 페이지
+
+### Phase 8: 배포 및 운영 (예정)
+- [ ] Vercel 배포 (Frontend + API Routes)
+- [ ] Neon.tech Production DB 설정
+- [ ] 크롤링 스케줄러 (월 1회 자동 실행)
+- [ ] 모니터링 및 로깅
+
+## 주요 파일 설명
+
+| 파일 경로 | 설명 |
+|----------|------|
+| `src/app/admin/page.tsx` | 관리자 크롤링 페이지 |
+| `src/app/dashboard/map-view/page.tsx` | 지도 뷰 페이지 |
+| `src/components/map/CustomPieMarker.tsx` | 파이차트 마커 컴포넌트 |
+| `src/components/map/HistoryDialog.tsx` | 이력 다이얼로그 |
+| `src/lib/crawler.ts` | Playwright 크롤링 엔진 |
+| `src/lib/geocoding.ts` | Kakao Geocoding API |
+| `src/lib/prisma.ts` | Prisma Client 싱글톤 |
+| `prisma/schema.prisma` | 데이터베이스 스키마 |
 
 ## 참고 문서
 
-- **bmad-method 문서**: `/docs/` 디렉토리 참조
-- **Frontend 구현**: `/frontend/claude.md` 참조
-- **Backend 구현**: `/backend/claude.md` 참조
-- **Crawler 구현**: `/crawler/claude.md` 참조
+- **PRD 문서**: `prd.md` (bmad-method v4.44.0)
+- **Prisma 문서**: https://www.prisma.io/docs
+- **Next.js 문서**: https://nextjs.org/docs
+- **Playwright 문서**: https://playwright.dev/docs/intro
+- **Kakao Maps API**: https://apis.map.kakao.com/web/
 
-## 버전 관리
+## 버전 정보
 
-- bmad-method: v4.44.0
-- Next.js: 14.2
-- Django: 4.2.11
-- Python: 3.11+
-- Node.js: 18+
+- **bmad-method**: v4.44.0
+- **Next.js**: 15.1.4
+- **React**: 19.0.0
+- **Prisma**: 6.17.1
+- **Playwright**: 1.49.1
+- **Node.js**: 18+
 
 ## 라이선스
 

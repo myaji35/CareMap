@@ -10,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -43,4 +43,39 @@ model InstitutionHistory {
 
   @@index([institutionId])
   @@index([recordedDate])
+}
+
+model Crawler {
+  id                String         @id @default(cuid())
+  name              String         // 크롤러 이름 (예: "장기요양기관 목록")
+  url               String         // 크롤링 대상 URL
+  description       String?        // 크롤러 설명
+  isActive          Boolean        @default(true)  // 활성화 여부
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  jobs              CrawlerJob[]
+
+  @@index([isActive])
+}
+
+model CrawlerJob {
+  id                String      @id @default(cuid())
+  crawlerId         String?     // 크롤러 ID (nullable for backward compatibility)
+  status            String      // 'running', 'completed', 'failed'
+  startedAt         DateTime    @default(now())
+  completedAt       DateTime?
+  totalPages        Int
+  crawledCount      Int         @default(0)
+  savedToDb         Boolean     @default(false)
+  createdCount      Int         @default(0)
+  updatedCount      Int         @default(0)
+  failedCount       Int         @default(0)
+  errorMessage      String?
+
+  crawler           Crawler?    @relation(fields: [crawlerId], references: [id], onDelete: SetNull)
+
+  @@index([startedAt])
+  @@index([status])
+  @@index([crawlerId])
 }
