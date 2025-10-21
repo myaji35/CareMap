@@ -27,7 +27,13 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(institution)
+    // Calculate occupancy rate
+    const occupancyRate =
+      institution.capacity && institution.currentHeadcount
+        ? Math.round((institution.currentHeadcount / institution.capacity) * 100)
+        : 0
+
+    return NextResponse.json({ ...institution, occupancyRate })
   } catch (error) {
     console.error("Error fetching institution:", error)
     return NextResponse.json(

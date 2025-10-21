@@ -39,8 +39,7 @@ export default function Home() {
 
   const handleMarkerClick = (id: number) => {
     console.log('Institution clicked:', id);
-    // 나중에 상세 페이지로 이동
-    // router.push(`/institutions/${id}`);
+    router.push(`/institutions/${id}`);
   };
 
   const handleLogout = async () => {

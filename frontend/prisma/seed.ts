@@ -102,6 +102,36 @@ async function main() {
       create: inst,
     })
     console.log(`✅ Institution created: ${institution.name}`)
+
+    // Add sample history data (last 6 months)
+    const historyData = []
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date()
+      date.setMonth(date.getMonth() - i)
+      date.setDate(1)
+
+      // Simulate some variation in headcount
+      const variation = Math.floor(Math.random() * 5) - 2
+      const headcount = Math.max(
+        0,
+        Math.min(inst.capacity!, (inst.currentHeadcount || 0) + variation)
+      )
+
+      historyData.push({
+        institutionId: institution.id,
+        recordedDate: date,
+        name: institution.name,
+        address: institution.address,
+        capacity: institution.capacity,
+        currentHeadcount: headcount,
+      })
+    }
+
+    await prisma.institutionHistory.createMany({
+      data: historyData,
+      skipDuplicates: true,
+    })
+    console.log(`  ✅ Added ${historyData.length} history records`)
   }
 
   console.log('🎉 Seed completed!')
